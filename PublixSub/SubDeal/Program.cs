@@ -50,9 +50,19 @@ query Promotion($promotionCode: ID, $previewHash: String, $promotionTypeID: Int,
                 Console.WriteLine("Required: ZIP Code");
             }
             
+            if (!Regex.IsMatch(args[0], @"^\d+$") && !Regex.IsMatch(args[0], @"^\d+-\d+$"))
+            {
+                Console.WriteLine("Required: ZIP Code");
+            }
+
             var storesResponse = await WebClient.GetString(string.Format(storeInfoUrl, args[0]), "application/json");
 
             var storeList = JsonConvert.DeserializeObject<StoreList>(storesResponse, PublixDotCom.StoreInfo.Converter.Settings);
+            if (storeList == null || !storeList.Stores.Any()) 
+            {
+                Console.Error.WriteLine($"No Publix stores near {args[0]}. :(");
+                Environment.Exit(1);
+            }
 
             var storeRef = storeList.Stores.First(a => string.IsNullOrWhiteSpace(a.Status)).Key;
 
