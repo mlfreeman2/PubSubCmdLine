@@ -1,11 +1,9 @@
 using System;
-using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using System.Xml;
 
-namespace PublixSub.Util
+namespace PublixDotCom.Util
 {
     public class WebClient
     {

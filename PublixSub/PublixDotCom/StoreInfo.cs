@@ -1,186 +1,166 @@
 using System;
-using System.Globalization;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using PublixDotCom.Util;
+using System.Linq;
 
 namespace PublixDotCom.StoreInfo
 {
-
-
     public partial class StoreList
     {
-        [JsonProperty("Stores", NullValueHandling = NullValueHandling.Ignore)]
+        public static async Task<Store[]> Fetch(int zipCode)
+        {
+            return await Fetch($"{zipCode}");
+        }
+
+        public static async Task<Store[]> Fetch(string zipCode)
+        {
+            var url = @"https://services.publix.com/api/v1/storelocation?types=R,G,H,N,S&option=&count=15&includeOpenAndCloseDates=true&zipCode={0}";
+
+            var requestUrl = string.Format(url, zipCode);
+
+            var storesResponse = await WebClient.GetString(requestUrl, "application/json");
+
+            var storeList = JsonConvert.DeserializeObject<StoreList>(storesResponse);
+
+            if (storeList == null || storeList.Stores == null) 
+            {
+                return new Store[0];
+            }
+            
+            return storeList.Stores.Where(a => string.IsNullOrWhiteSpace(a.Status)).ToArray();
+        }
+
+
+        [JsonProperty("Stores")]
         public Store[] Stores { get; set; }
     }
 
     public partial class Store
     {
-        [JsonProperty("KEY", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("KEY")]
         public string Key { get; set; }
 
-        [JsonProperty("NAME", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("NAME")]
         public string Name { get; set; }
 
-        [JsonProperty("ADDR", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("CLAT")]
+        [JsonConverter(typeof(StringToFloatConverter))]
+        public float Latitude { get; set; }
+
+        [JsonProperty("CLON")]
+        [JsonConverter(typeof(StringToFloatConverter))]
+        public float Longitude { get; set; }
+
+        [JsonProperty("ADDR")]
         public string Address { get; set; }
 
-        [JsonProperty("CITY", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("CITY")]
         public string City { get; set; }
 
-        [JsonProperty("STATE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("STATE")]
         public string State { get; set; }
 
-        [JsonProperty("ZIP", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("ZIP")]
         public string ZIP { get; set; }
 
-        [JsonProperty("PHONE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("PHONE")]
         public string Phone { get; set; }
 
-        [JsonProperty("PHMPHONE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("PHMPHONE")]
         public string PharmacyPhone { get; set; }
 
-        [JsonProperty("LQRPHONE", NullValueHandling = NullValueHandling.Ignore)]
-        public string Lqrphone { get; set; }
+        [JsonProperty("LQRPHONE")]
+        public string LiquorStorePhone { get; set; }
 
-        [JsonProperty("PXFPHONE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("PXFPHONE")]
         public string Pxfphone { get; set; }
 
-        [JsonProperty("FAX", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("FAX")]
         public string Fax { get; set; }
 
-        [JsonProperty("STRHOURS", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("STRHOURS")]
         public string StoreHours { get; set; }
 
-        [JsonProperty("PHMHOURS", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("PHMHOURS")]
         public string PharmacyHours { get; set; }
 
-        [JsonProperty("LQRHOURS", NullValueHandling = NullValueHandling.Ignore)]
-        public string Lqrhours { get; set; }
+        [JsonProperty("LQRHOURS")]
+        public string LiquorStoreHours { get; set; }
 
-        [JsonProperty("PXFHOURS", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("PXFHOURS")]
         public string Pxfhours { get; set; }
 
-        [JsonProperty("OPTION", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("OPTION")]
         public string Option { get; set; }
 
-        [JsonProperty("DEPTS", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("DEPTS")]
         public string Depts { get; set; }
 
-        [JsonProperty("SERVICES", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("SERVICES")]
         public string Services { get; set; }
 
-        [JsonProperty("TYPE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("TYPE")]
         public string Type { get; set; }
 
-        [JsonProperty("UNIQUE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("UNIQUE")]
         public string Unique { get; set; }
 
-        [JsonProperty("EPPH", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("EPPH")]
         public string Epph { get; set; }
 
-        [JsonProperty("CSPH", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("CSPH")]
         public string Csph { get; set; }
 
-        [JsonProperty("MAPH", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("MAPH")]
         public string Maph { get; set; }
 
-        [JsonProperty("CLAT", NullValueHandling = NullValueHandling.Ignore)]
-        public string Clat { get; set; }
-
-        [JsonProperty("CLON", NullValueHandling = NullValueHandling.Ignore)]
-        public string Clon { get; set; }
-
-        [JsonProperty("DISTANCE", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonProperty("DISTANCE")]
+        [JsonConverter(typeof(StringToLongConverter))]
         public long? Distance { get; set; }
 
         [JsonProperty("WABREAK")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonConverter(typeof(StringToLongConverter))]
         public long? Wabreak { get; set; }
 
-        [JsonProperty("WASTORENUM", NullValueHandling = NullValueHandling.Ignore)]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonProperty("WASTORENUM")]
+        [JsonConverter(typeof(StringToLongConverter))]
         public long? Wastorenum { get; set; }
 
         [JsonProperty("OPENINGDATE")]
-        public string Openingdate { get; set; }
+        public string OpeningDate { get; set; }
 
         [JsonProperty("CLOSINGDATE")]
-        public object Closingdate { get; set; }
+        public object ClosingDate { get; set; }
 
-        [JsonProperty("ISENABLED", NullValueHandling = NullValueHandling.Ignore)]
-        public bool? Isenabled { get; set; }
+        [JsonProperty("ISENABLED")]
+        public bool? IsEnabled { get; set; }
 
-        [JsonProperty("STOREDATETIME", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTimeOffset? Storedatetime { get; set; }
+        [JsonProperty("STOREDATETIME")]
+        public DateTimeOffset? StoreDateTime { get; set; }
 
-        [JsonProperty("STATUS", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("STATUS")]
         public string Status { get; set; }
 
-        [JsonProperty("STOREMAPSID", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("STOREMAPSID")]
         public long? Storemapsid { get; set; }
 
-        [JsonProperty("STOREMAPTOGGLE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("STOREMAPTOGGLE")]
         public bool? Storemaptoggle { get; set; }
 
-        [JsonProperty("IMAGE", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("IMAGE")]
         public Image Image { get; set; }
 
-        [JsonProperty("SHORTNAME", NullValueHandling = NullValueHandling.Ignore)]
-        public string Shortname { get; set; }
+        [JsonProperty("SHORTNAME")]
+        public string ShortName { get; set; }
     }
 
     public partial class Image
     {
-        [JsonProperty("Thumbnail", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("Thumbnail")]
         public Uri[] Thumbnail { get; set; }
 
-        [JsonProperty("Hero", NullValueHandling = NullValueHandling.Ignore)]
-        public Uri[] Hero { get; set; }
-    }
-
-    public static class Converter
-    {
-        public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-        {
-            MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-            DateParseHandling = DateParseHandling.None,
-            Converters =
-            {
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-            },
-        };
-    }
-
-
-    internal class ParseStringConverter : JsonConverter
-    {
-        public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
-
-        public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
-        {
-            if (reader.TokenType == JsonToken.Null) return null;
-            var value = serializer.Deserialize<string>(reader);
-            long l;
-            if (Int64.TryParse(value, out l))
-            {
-                return l;
-            }
-            throw new Exception("Cannot unmarshal type long");
-        }
-
-        public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
-        {
-            if (untypedValue == null)
-            {
-                serializer.Serialize(writer, null);
-                return;
-            }
-            var value = (long)untypedValue;
-            serializer.Serialize(writer, value.ToString());
-            return;
-        }
-
-        public static readonly ParseStringConverter Singleton = new ParseStringConverter();
+        [JsonProperty("Hero")]
+        public Uri[] FullSize { get; set; }
     }
 }
